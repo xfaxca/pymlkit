@@ -7,7 +7,7 @@ from pymlkit.explore import *
 
 __doc__ = "Package: pymlkit\n" \
           "Created: 11/01/2016\n" \
-          "Author contact: cameron@tutanota.com \n" \
+          "Author contact: xfaxca@tutamail.com \n" \
           "Description: Toolkit for the creation of machine learning algorithms in Python. Contains functions \n" \
           "that serve as wrappers to scikit-learn and mlxtend as well as custom modules for data cleaning, \n" \
           "pre-processing, model selection, estimator tuning and model evaluation."

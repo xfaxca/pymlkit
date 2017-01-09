@@ -222,3 +222,103 @@ def balance_classes_adasyn(X, y, ratio='auto', random_state=None, k=5):
     X_adasyn, y_adasyn = ad.fit_sample(X, y)
 
     return X_adasyn, y_adasyn
+
+
+# ====== Feature Engineering/Generation
+class FeatureGenerator(object):
+    """
+    Class containing several methods for the generation of new features via the transformation
+        existing features that are specified by the user. Each feature used as input will be combined
+        in a specific manner (depending on the method used) with each other feature and itself, generating
+        n^2 new features in addition to the n features passed.
+
+        Note, passing data as a pandas DataFrame is recommended so that the feature names are preserved,
+            and the components of new features can be identified by their corresponding column titles in the
+            new returned DataFrame.
+    """
+    def __init__(self, name='FeatureGenerator', verbose=1):
+        self.name = name
+        self._version = '0.1'
+        self.verbose = verbose
+        # add more attributes as needed
+
+    def fit_sq(self, X, y=None):
+        """
+        Generates n^2 new features that are combinations of the square of each feature couple.
+        :param X: Feature matrix as ndarray or pandas DataFrame.
+        :param y: (default=None). Optional class label array. No operations are performed on y.
+        :return: None unless transform_sq is called. Transforms features using Sum of Squares
+            and stores in object attribute if just fit_sq is called.
+        """
+        if self.verbose >= 1:
+            # TODO: replace w/ decorator
+            print('\n============================================================')
+            print('FeatureGenerator instance "%s" invoked. Generating new features using Sum of Squares. Number of new '
+                  'features generated from this method = n^2, where n is the # of original features. Note, original '
+                  'features are preserved.' % self.name)
+            print('============================================================')
+        print('>Method: Generating New Features: Sum of Squares --> [(x1^2 + x1^2), (x1^2 + x2^2),...((x1^2 + xn^2)].')
+        if isinstance(X, pd.DataFrame):
+            print('Features passed in dataframe --> ', list(X.columns.values))
+            print('\nFeature data was passed as a pandas DataFrame. Returning as same.')
+            features = X.columns.values
+            print('===> %15s %i' % ('# Old Features  |', len(features)))
+            self.df_new = pd.DataFrame()
+            new = []
+            for feature in features:
+                self.df_new[feature] = X[feature]
+                for feature2 in features:
+                    new_feature_name = feature + '^2' + '+' + feature2 + '^2'
+                    new_feature_tmp = np.zeros((X.shape[0], 1))
+                    # print('temp name:', new_feature_name)
+                    for i in range(X.shape[0]):
+                        new_feature_tmp[i, 0] = X.ix[i, feature]**2 + X.ix[i, feature2]**2
+                    self.df_new[new_feature_name] = new_feature_tmp
+            print('===> %15s %i' % ('# New Features  |', (self.df_new.shape[0] - len(features))))
+            print('===> %15s %i (shape: (%s,%s)' % ('Total Features  |', self.df_new.shape[0],
+                                               self.df_new.shape[0], self.df_new.shape[1]))
+            print('>Output: New features stored in FeatureGenerator instance "%s" attribute obj.df_new.\n' %
+                  self.name)
+        elif isinstance(X, np.ndarray):
+            # If is an np.ndarray, perform operations directly on the ndarray's. This should give the same
+            # output as when using pandas (has been tested)
+            n_features = X.shape[1]
+            print('\nFeature data passed as np.ndarray. Returning in same format.')
+            print('===> %15s %i' % ('# Old Features  |', n_features))
+            self.X_new = np.zeros((X.shape[0], (n_features + (n_features**2))))
+            current_column = 0
+            for i in range(n_features):
+                self.X_new[:, current_column] = X[:, i]
+                current_column += 1
+                for j in range(n_features):
+                    new_feature_tmp = np.zeros((X.shape[0], 1))
+                    for k in range(X.shape[0]):
+                        new_feature_tmp[k, 0] = X[k, i]**2 + X[k, j]**2
+                    self.X_new[:, current_column] = new_feature_tmp[:, 0]
+                    current_column += 1
+            print('===> %15s %i' % ('# New Features  |', (self.df_new.shape[0] - n_features)))
+            print('===> %15s %i (shape: (%s,%s))' % ('Total Features  |', self.X_new.shape[0],
+                                                self.X_new.shape[0], self.X_new.shape[1]))
+            print('>Output: New features stored in FeatureGenerator instance "%s" attribute obj.X_new.\n' %
+                  self.name)
+            pass
+        else:
+            print('ERROR: Input features must be either a ndarray or pandas DataFrame format.')
+
+    def transform_sq(self, X, y=None):
+        """
+        Method to fit and return the transformed data to user.
+        :param X: Feature matrix as ndarray or pandas DataFrame.
+        :param y: (default=None). Optional class label array. No operations are performed on y.
+        :return: Transformed features using Sum of Squares. Total # of features returned will = n^2 + n,
+            preserving the original features.
+        """
+        if isinstance(X, pd.DataFrame):
+            self.fit_sq(X)
+            return self.df_new
+        elif isinstance(X, np.ndarray):
+            pass
+            self.fit_sq(X)
+            return self.X_new
+        else:
+            print('ERROR: Input features must be either a ndarray or pandas DataFrame format.')

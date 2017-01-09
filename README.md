@@ -12,7 +12,7 @@ Python tools for preprocessing data and building and evaluating machine learning
     heavy use is made of the pandas DataFrame data structure. While it is possible to use many of the functions
     for data not in this format, it is advised that it be used.
     
-    Please feel free to send comments or criticisms to cameron@tutanota.com.
+    Please feel free to send comments or criticisms to xfaxca@tutamail.com.
 
 ## Planned:
 1. preprocessing.py: Functions for cleaning, imputing, feature mapping and scaling.

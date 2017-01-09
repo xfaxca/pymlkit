@@ -11,5 +11,5 @@ Python tools for preprocessing data and building and evaluating machine learning
 ## Planned:
 1. preprocessing.py: Functions for cleaning, imputing, feature mapping and scaling.
 2. model_select.py: Functions for choosing models, including cross-validation and grid search.
-3. model_eval: Accuracy assessments and analysis of model output.
-4. nlp: Functions to aid in natural language processing
+3. model_eval.py: Accuracy assessments and analysis of model output.
+4. nlp.py: Functions to aid in natural language processing

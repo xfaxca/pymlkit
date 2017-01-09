@@ -10,7 +10,7 @@ Python tools for preprocessing data and building and evaluating machine learning
     
     Many of the functions serve as wrappers to other packages such as scikit-learn, mlxtend and nltk. Additionally,
     heavy use is made of the pandas DataFrame data structure. While it is possible to use many of the functions
-    for data not in this format, it is advised to do so.
+    for data not in this format, it is advised that it be used.
     
     Please feel free to send comments or criticisms to cameron@tutanota.com.
 

@@ -7,6 +7,9 @@ Module containing functions for data exploration and visualization.
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+__all__ = ['class_proportions',
+           'see_nulls']
+
 
 # ====== Data Statistics
 def class_proportions(y):

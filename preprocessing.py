@@ -222,3 +222,218 @@ def balance_classes_adasyn(X, y, ratio='auto', random_state=None, k=5):
     X_adasyn, y_adasyn = ad.fit_sample(X, y)
 
     return X_adasyn, y_adasyn
+
+
+# ======= Feature engineering/generation
+class PolynomialConstructor(object):
+    # TODO: Finish polyratio and polyprod methods
+    """
+    Class containing several methods for the construction of new arrays via the transformation
+        existing arrays that are passed. 'fit' methods should be used if the transformation of the
+        data is desired without immediate return, and transformed data will be stored in the attributes
+        'X.new' or 'df.new', depending on whether the input matrix is a ndarray or pandas DataFrame.
+        'fit_transform' methods should be used to return return the transformed data.
+
+        Transformations available:
+                1. poly: Calculates the nth power of the input values. E.g., x1 --> x1^n
+                2. polysum: Calculates the column-pair-wise sum of values raised to the nth power.
+                    E.g., (x1, x2) ---> (x1^n + x2^n)
+                3. polyratio: Calculates the pairwise ratios of input values after raising them to the nth power.
+                    E.g., (x1, x2) ---> (x1^n/x2^n, x2^n/x1^n)
+                4. polyprod: Calculates the pairwise product of the input values to the nth power.
+                    E.g., (x1, x2) ---> (x1^n*x2^n)
+
+        Combinations of column in the input matrix may be transformed by any of the above options. Original
+        data is preserved and returned along with the transformed data.
+
+        Plese note that passing data as a pandas DataFrame is recommended so that the column names are easily
+            preserved, and the components of new columns can be identified by their corresponding column titles
+            in the new returned DataFrame.
+    """
+
+    def __init__(self, name='PolynomialConstructor', n=2, verbose=1):
+        """
+        Attributes:
+            1. self.name: Customizable text name of the PolynomialConstructor object
+            2. self.n: (int) Power by which to raise the values in each column of the input matrix. E.g., if n == 2,
+                x --> x^2
+            3. self.X_new: Placeholder for new data matrix
+            4. self.df_new: Placeholder for new data DataFrame
+            5. self._verbose: (int) Level of verbosity
+
+        Common arguments:
+            1. :param X: 2D matrix-like data set as ndarray or pandas DataFrame
+            2. :param y: (default=None). Optional class label array. No operations are performed on y.
+        """
+        self.name = name
+        self.n = int(n)
+        self.X_new = None
+        self.df_new = pd.DataFrame()
+        self._verbose = verbose
+
+    def __reset__(self):
+        """
+        Method to reset data from previous fit
+        :return: None
+        """
+        if self.X_new is not None:
+            self.X_new = None
+        if self.df_new.shape[0] > 1 and self.df_new.shape[1] > 1:
+            self.df_new = pd.DataFrame()
+
+    def fit_poly(self, X, y=None):
+        """
+        Method Generates k new data columns, where the values of each original column have been raised to the power of n
+            and k is the original number of columns
+        :return: None unless transform_poly is called. Transforms values by raising them to the power specified
+            by self.n
+        """
+        self.__reset__()
+
+        if self._verbose >= 1:
+            self._header(funcname=self.fit_poly.__name__)
+
+        if isinstance(X, pd.DataFrame):
+            columns = X.columns.values
+
+            for col in columns:
+                self.df_new[col] = X[col]
+
+            for col in columns:
+                new_name = col + '^%s' % self.n
+                self.df_new[new_name] = X[col] ** self.n
+            if self._verbose >= 1:
+                self._fit_exit(newshape=self.df_new.shape, n_old=len(columns), dtype=type(self.X_new))
+        elif isinstance(X, np.ndarray):
+            n_columns = X.shape[1]
+            print('inside numpy loop for poly')
+            self.X_new = np.zeros((X.shape[0], 2 * n_columns))
+
+            current_column = 0
+            for col in range(n_columns):
+                self.X_new[:, col] = X[:, col]
+                current_column += 1
+
+            for col in range(n_columns):
+                self.X_new[:, current_column] = X[:, col] ** self.n
+                current_column += 1
+            if self._verbose >= 1:
+                self._fit_exit(newshape=self.X_new.shape, n_old=n_columns, dtype=type(self.X_new))
+        else:
+            print('ERROR: Input must be ndarray or pandas DataFrame')
+
+    def fit_transform_poly(self, X, y=None):
+        """
+        Method to fit and return the data transformed by poly_fit
+        :return: Transformed and original data
+        """
+        self.fit_poly(X)
+        if isinstance(X, pd.DataFrame):
+            return self.df_new
+        elif isinstance(X, np.ndarray):
+            return self.X_new
+
+    def fit_polysum(self, X, y=None):
+        """
+        Generates k(k+1)/2 new features that are linear combinations of the square of each feature couple, where k is
+            the original number of features passed.
+        :return: None unless transform_polysum is called. Transforms features using Sum of polynomials
+            and stores in object attribute if just fit_polysum is called.
+        """
+        self.__reset__()
+
+        if self._verbose >= 1:
+            self._header(funcname=self.fit_polysum.__name__)
+
+        if isinstance(X, pd.DataFrame):
+            features = X.columns.values
+
+            for feature in features:
+                self.df_new[feature] = X[feature]
+
+            seen = set()
+            for feature in features:
+                for feature2 in features:
+                    pair = tuple(sorted([feature, feature2]))
+                    if pair not in seen:
+                        new_feature_name = feature + '^%s' % self.n + '+' + feature2 + '^%s' % self.n
+                        self.df_new[new_feature_name] = X[feature] ** self.n + X[feature2] ** self.n
+                        seen.add(pair)
+            if self._verbose >= 1:
+                self._fit_exit(newshape=self.df_new.shape, n_old=len(features), dtype=type(X))
+        elif isinstance(X, np.ndarray):
+            n_features = X.shape[1]
+            current_column = 0
+            self.X_new = np.zeros((X.shape[0], (n_features * (n_features + 1)) / 2 + n_features))
+
+            for i in range(n_features):
+                self.X_new[:, current_column] = X[:, i]
+                current_column += 1
+
+            seen = set()
+            for i in range(n_features):
+                for j in range(n_features):
+                    pair = tuple(sorted([i, j]))
+                    if pair not in seen:
+                        self.X_new[:, current_column] = X[:, i] ** self.n + X[:, j] ** self.n
+                        current_column += 1
+                        seen.add(pair)
+            if self._verbose >= 1:
+                self._fit_exit(newshape=self.X_new.shape, n_old=n_features, dtype=type(X))
+        else:
+            print('ERROR: Input must be either ndarray or pandas DataFrame format.')
+
+    def fit_transform_polysum(self, X, y=None):
+        """
+        Method to fit and return the data transformed by polysum_fit.
+        :return: Transformed and original features
+        """
+        self.fit_polysum(X)
+        if isinstance(X, pd.DataFrame):
+            return self.df_new
+        elif isinstance(X, np.ndarray):
+            return self.X_new
+        else:
+            print('ERROR: Input either ndarray or pandas DataFrame format.')
+
+    def fit_polyratio(self, X, y=None):
+        """
+        **************(UNDER CONSTRUCTION)****************
+        Method to calculate the ratio the nth power of column-pair-wise combinations of original data.
+        :return:
+        """
+
+    def fit_transform_polyratio(self, X, y=None):
+        """
+        **************(UNDER CONSTRUCTION)****************
+        Calls fit_polyratio method and returns transformed data.
+        :return:
+        """
+
+    def fit_polyprod(self, X, y):
+        """
+         **************(UNDER CONSTRUCTION)****************
+        :return:
+        """
+
+    def fit_transform_polyprod(self, X, y=None):
+        """
+        **************(UNDER CONSTRUCTION)****************
+        :return:
+        """
+
+        return None
+
+    def _fit_exit(self, newshape, n_old, dtype):
+        print('===> %15s %i' % ('# New Features  |', (newshape[1] - n_old)))
+        print('===> %15s %i (shape: (%s,%s))' % ('Total Features  |', newshape[1],
+                                                 newshape[0], newshape[1]))
+        print('DONE: New features stored in PolynomialConstructor instance "%s" obj.X_new or obj.df_new, depending'
+              'on the original data type.\n' %
+              self.name)
+        print('Transformed features returned as:', dtype)
+
+    def _header(self, funcname):
+        print('\n==================================================================')
+        print('%s: Generating new features using method: %s' % (self.name, funcname))
+        print('==================================================================')

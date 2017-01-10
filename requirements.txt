@@ -1,0 +1,7 @@
+Requirements for full functionality of pymlkit:
+1. Scikit-learn
+2. NumPy
+3. pandas
+4. Seaborn
+5. Matplotlib
+6. imblearn

@@ -1,21 +1,24 @@
-# preprocessing.py
-
-"""
-Functions for data cleaning, imputation, feature mapping and scaling.
-"""
+# # preprocessing.py
+#
+# """
+# Functions for data cleaning, imputation, feature mapping and scaling.
+# """
 import numpy as np
 import pandas as pd
 import sys
+
 
 from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN
 from imblearn.under_sampling import RandomUnderSampler
 
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.base import TransformerMixin
+from sklearn.preprocessing import LabelEncoder
 
 
 __all__ = ['yn_binarize',
            'map_feature',
+           'label_encoding',
            'impute_by_other',
            'impute_all',
            'DataFrameImputer',
@@ -67,15 +70,34 @@ def map_feature(df, feature, feature_values, mapped_values):
     else:
         map_dict = dict(zip(feature_values, mapped_values))
         df[feature] = df[feature].map(map_dict)
+
     return df
+
+
+def label_encoding(y, verbose=1):
+    """
+    Function to encode labels using Sci-kit learn's label encoder. Returns label encoder object and encoded labels.
+    :param y: Un-encoded labels
+    :return: LabelEncoder object and encoded class labels (numpy.ndarray)
+    """
+    le = LabelEncoder()
+    y_enc = le.fit_transform(y)
+    if verbose >= 1:
+        print('\n===== > Labels being encoded...')
+        print('Original class labels encoded: %s\n' % le.classes_)
+
+    return le, y_enc
 
 
 # ====== Imputation
 def impute_by_other(df, imp_feat, other_feat):
     """
-    Function to impute a feature (imp_feat) by the corresponding mean of another features value in that sample.
+    Function to impute a feature (imp_feat) by the corresponding mean in other samples with the same 'other_feat'.
     The average is calculated from other samples where the imputed feature is not null and the value of the other
     feature (other_feat) is the same as for the sample being imputed.
+
+    NOTE: The reference feature (other_feat) should be categorical. If it is, for example, a float value, there
+        is no garantee that the imputed values will be calculated from a sufficiently large sample size
     :param df: pandas DataFrame containing the feature to be imputed as well as the reference feature.
     :param other_feat: Column name of the other feature from which to take the mean of imp_feat
     :param imp_feat: Column name of the feature to be imputed with the mean derived from the other feature.
@@ -89,16 +111,17 @@ def impute_by_other(df, imp_feat, other_feat):
     return None
 
 
-def impute_all(df):
+def impute_all(df, how='mean'):
     """
     Function to impute all nan values in a pandas DataFrame using the class DataFrameImputer as defined with
     this modeule. Numeric features are imputed as the mean of the column wheras object/string values are imputed
     by the median. The same result can be achieved by using the .transform method of the DataFrameImputer class, and
     this function basically acts as a wrapper.
     :param df: (pandas df) DataFrame containing the feature data that will be imputed.
-    :return:
+    :param how: (str) How to imput numerical columns. Options include ['mean', 'median']
+    :return: DataFrame with imputed data
     """
-    df_imp = DataFrameImputer()
+    df_imp = DataFrameImputer(how=how)
     return df_imp.fit_transform(df)
 
 
@@ -110,19 +133,29 @@ class DataFrameImputer(TransformerMixin):
 
     Credit for this code goes to Stackoverflow user sveitser.
     """
-    def __init__(self):
+    def __init__(self, how='mean'):
         """Impute missing values.
 
-        Columns of dtype object are imputed with the most frequent value
-        in column.
+        Columns of dtype object are imputed with the most frequent value in column (mode). Columns of
+        other types are imputed with mean/median of column, depending on the value of the 'how' argument.
 
-        Columns of other types are imputed with mean of column.
-
+        Arguments:
+            1. how: How to impute missing values in numerical columns. 'mean', or 'median' are the only valid options.
         """
+        self.how = how
+
     def fit(self, X, y=None):
-        self.fill = pd.Series([X[c].value_counts().index[0]
-                               if X[c].dtype == np.dtype('O') else X[c].mean() for c in X],
-                              index=X.columns)
+        if self.how == 'mean':
+            self.fill = pd.Series([X[c].value_counts().index[0]
+                                   if X[c].dtype == np.dtype('O') else X[c].mean() for c in X],
+                                  index=X.columns)
+        elif self.how == 'median':
+            self.fill = pd.Series([X[c].value_counts().index[0]
+                                   if X[c].dtype == np.dtype('O') else X[c].median() for c in X],
+                                  index=X.columns)
+        else:
+            print('Invalid choice for parameter "how"')
+
         return self
 
     def transform(self, X, y=None):
@@ -199,7 +232,7 @@ def random_undersample(X, y, ratio='auto', random_state=None, replacement=True):
     return X_res, y_res
 
 
-def balance_classes_smote(X, y, kind='regular', ratio='auto', m=5, k=15):
+def balance_classes_smote(X, y, kind='regular', ratio='auto', m=5, k=5):
     """
     Function to balance the distribute of classes by using Synthetic Minority
     Over-sampling Technique (SMOTE)

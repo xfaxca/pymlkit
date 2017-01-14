@@ -1,4 +1,4 @@
-#!C:/Python34 python
+# setup.py
 
 from distutils.core import setup
 

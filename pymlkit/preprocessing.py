@@ -1,8 +1,9 @@
 # # preprocessing.py
-#
-# """
-# Functions for data cleaning, imputation, feature mapping and scaling.
-# """
+
+"""
+Module containing functionality for data cleansing, imputation, feature mapping and scaling.
+"""
+
 import numpy as np
 import pandas as pd
 import sys

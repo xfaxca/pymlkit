@@ -1,7 +1,7 @@
 # explore.py
 
 """
-Module containing functions for data exploration and visualization.
+Module containing functionality for exploratory data analysis and visualization.
 """
 
 import seaborn as sns

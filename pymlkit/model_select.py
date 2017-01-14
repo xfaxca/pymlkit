@@ -1,11 +1,10 @@
 # model_selection.py
 
 """
-                            !!! ( UNDER CONSTRUCTION ) !!!
-Module containing functions for selection models, including cross validation checks, model scans for common
+Module containing functionality for selecting models, including cross validation checks, model scans for common
 classifiers/regressors, creation of ensemble models (bagging, majority vote, etc.)
 """
-# TODO: !( Under construction ) !
+
 import sys
 
 from sklearn.metrics import cohen_kappa_score

@@ -17,9 +17,13 @@ preprocessing
 model_select
         Module containing functionality for selecting models, including cross validation checks, model scans for
     common classifiers/regressors, creation of ensemble models (bagging, majority vote, etc.)
+
+nlp
+        Module containing classes and functions for text processing (cleaning, tokenization, vectorization, etc.).
 """
 
-__version__ = "pymlkit-v0.0.2"
+__version__ = "pymlkit-v0.0.3"
 __all__ = ['preprocessing',
            'explore',
-           'model_selection']
+           'model_selection',
+           'nlp']

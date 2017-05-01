@@ -20,6 +20,7 @@ from sklearn.preprocessing import LabelEncoder
 __all__ = ['yn_binarize',
            'map_feature',
            'label_encoding',
+           'remove_outliers',
            'impute_by_other',
            'impute_all',
            'DataFrameImputer',
@@ -90,6 +91,44 @@ def label_encoding(y, verbose=1):
     return le, y_enc
 
 
+# ====== Data cleaning
+def remove_outliers(df_data, target_name=None, df_target=None, separate=False, lowp=0, highp=99.99,
+                    verbose=1):
+    """
+    Function to remove outliers based on the values of a target variable.
+    :param df_data: (pandas df) -  Feature (and target) data set
+    :param target_name: name of target variable
+    :param df_target: (pandas df/series, optional) - Dataframe/Series containing the target variable (if separate=True)
+    :param separate: (bool) - Whether or not the features/target are in 2 separate data frames. If true,
+        target and data concatenated into 1 data frame with any duplicate columns removed. Otherwise
+    :param lowp: (float) - Lower limit percentile outliers below which will be removed (q in np.percentile())
+    :param highp: (float) - Upper limit percentile outliers above which will be removed (q in np.percentile())f.
+    :return: allData (pandas df) - Modified data frame with both target and df_features included and outliers removed.
+    """
+
+    if separate:
+        if df_target is None:
+            raise TypeError("Parameter 'df_target' not supplied while parameter separate=True!")
+        allData = pd.concat(objs=[df_data, df_target], axis=1)
+    else:
+        allData = df_data.copy(deep=True)
+
+    if verbose > 0:
+        print('Removing outliers from object: %s' % type(allData))
+        print('Original data shape: ', allData.shape)
+        print('Original columns:\n', allData.columns.values)
+        print('Removing %0.2f%% and %0.2f%% percentiles for variable %s' % (lowp, highp, target_name))
+
+    qlow = np.percentile(allData.salary.values, q=lowp)
+    qhigh = np.percentile(allData.salary.values, q=highp)
+    allData = allData[allData['salary'] > qlow]
+    allData = allData[allData['salary'] < qhigh]
+
+    if verbose > 0:
+        print('==> Finished removing outliers!\nNew shape of data: ', allData.shape)
+    return allData
+
+
 # ====== Imputation
 def impute_by_other(df, imp_feat, other_feat):
     """
@@ -97,7 +136,7 @@ def impute_by_other(df, imp_feat, other_feat):
     The average is calculated from other samples where the imputed feature is not null and the value of the other
     feature (other_feat) is the same as for the sample being imputed.
 
-    NOTE: The reference feature (other_feat) should be categorical. If it is, for example, a float value, there
+    Usage Notes: The reference feature (other_feat) should be categorical. If it is, for example, a float value, there
         is no garantee that the imputed values will be calculated from a sufficiently large sample size
     :param df: pandas DataFrame containing the feature to be imputed as well as the reference feature.
     :param other_feat: Column name of the other feature from which to take the mean of imp_feat
@@ -280,7 +319,7 @@ class PolynomialConstructor(object):
     Class containing several methods for the construction of new arrays via the transformation
         existing arrays that are passed. 'fit' methods should be used if the transformation of the
         data is desired without immediate return, and transformed data will be stored in the attributes
-        'X.new' or 'df.new', depending on whether the input matrix is a ndarray or pandas DataFrame.
+        'self.X_new' or 'self.df_new', depending on whether the input matrix is a ndarray or pandas DataFrame.
         'fit_transform' methods should be used to return return the transformed data.
 
     Transformations available:

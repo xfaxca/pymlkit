@@ -1,5 +1,4 @@
 # setup.py
-
 from setuptools import setup, find_packages
 
 setup(name='pymlkit',
@@ -10,9 +9,13 @@ setup(name='pymlkit',
       license='GNU GPLv3',
       url='https://github.com/xfaxca/pymlkit',
       packages=find_packages(),
-      install_requires=['matplotlib==1.5.1',
-                        'nltk==3.2.1',
-                        'numpy==1.11.2',
-                        'seaborn==0.7.1',
-                        'scikit_learn==0.18.1',
-                        'imbalanced-learn==0.2.1'])
+      install_requires=[['xgboost==0.90',
+                         'pandas==0.23.4',
+                         'nltk==3.3',
+                         'seaborn==0.9.0',
+                         'matplotlib==2.2.3',
+                         'numpy==1.16.4',
+                         'gensim==3.4.0',
+                         'imblearn==0.0',
+                         'scikit_learn==0.21.3',
+                         'textblob==0.15.3']])

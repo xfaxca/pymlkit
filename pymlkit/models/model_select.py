@@ -143,6 +143,7 @@ def reg_scoring(y_test, y_pred, scorers=None, verbose=0):
     :param y_test: (np.array/pandas series) - Actual target variable values
     :param y_pred: (np.array/pandas series) - Predicted target variable values
     :param scorers: (optional, dict) - Mapping of scorer name:scoring fucntion. E.g., {'r2': r2_score]
+    :param verbose: (int) - Controls level of console output.
     :return: scores: (dict) - dictionary of scores with key:value pairs of scorer_names:scores.
     """
     if scorers and not isinstance(scorers, dict):

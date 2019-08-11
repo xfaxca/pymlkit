@@ -104,7 +104,7 @@ def clf_scan(X_train, y_train, X_test=None, y_test=None, cv=5):
     return results
 
 
-def reg_scan(X_train, y_train, cv=5, X_test=None, y_test=None, extra_regressors=None):
+def reg_scan(X_train, y_train, cv=5, extra_regressors=None):
     """
     Function to perform k-fold cross validation on some standard regressors. Note, it may take a long time for
         some of the models (e.g., SVM, MLP) to converge on un-scaled data. Use un-scaled data with caution.
@@ -112,8 +112,6 @@ def reg_scan(X_train, y_train, cv=5, X_test=None, y_test=None, extra_regressors=
     :param X_train: (pandas df) Training feature set
     :param y_train: (pandas series/df) - Training target variable set
     :param cv: (int) - # of folds to use during k-folds cross validation of each model.
-    :param X_test: Matrix of features from the testing set
-    :param y_test: Target variable from the testing set
     :param extra_regressors: (dict, optional) - Key:Value pairs of regressor_name:estimator object. Extra regressors
             to include in the scan aside from those already included.
     :return: results: (dict) Regressor names and scores
@@ -146,29 +144,34 @@ def reg_scan(X_train, y_train, cv=5, X_test=None, y_test=None, extra_regressors=
 
     for name in reg_names:
         print("%25s :: CV Score: %0.3f%% (+/0 %0.3f)" % (name, results[name].mean(),
-                                                           results[name].std()))
+                                                         results[name].std()))
     return results
 
 
 # ====== Scoring-specific functions
-def reg_scoring(y_test, y_pred):
+def reg_scoring(y_test, y_pred, scorers=None, verbose=0):
     # Moved to pymlkit
     """
     Function to calculate basic scoring metrics for regression predictions, including r^2, MAE, MdAE and MSE
     :param y_test: (np.array/pandas series) - Actual target variable values
     :param y_pred: (np.array/pandas series) - Predicted target variable values
-    :return: mscores: (dict) - dictionary of scores with key:value pairs of scorer_names:scores.
+    :param scorers: (optional, dict) - Mapping of scorer name:scoring fucntion. E.g., {'r2': r2_score]
+    :return: scores: (dict) - dictionary of scores with key:value pairs of scorer_names:scores.
     """
-    scorers = [r2_score, median_absolute_error, mean_squared_error, mean_absolute_error]
-    scorer_names = ['r^2 Score', 'Median Absolute Error', 'Mean Squared Error', 'Mean Absolute Error']
-    mscores = {}
+    if scorers and not isinstance(scorers, dict):
+        raise TypeError("'scorers' must be of type dict.")
+    if scorers:
+        scoring_fns, score_names = list(scorers.keys()), list(scorers.values())
+    else:
+        scoring_fns = [r2_score, median_absolute_error, mean_squared_error, mean_absolute_error]
+        score_names = ['r^2 Score', 'Median Absolute Error', 'Mean Squared Error', 'Mean Absolute Error']
 
-    for sc, sc_name in zip(scorers, scorer_names):
-        tmp_score = sc(y_true=y_test, y_pred=y_pred)
-        mscores.setdefault(sc_name, tmp_score)
-        print('%25s: %0.3f' % (sc_name, tmp_score))
-
-    return mscores
+    scores = {}
+    for sc, sc_name in zip(scoring_fns, score_names):
+        scores[sc_name] = sc(y_true=y_test, y_pred=y_pred)
+        if verbose:
+            print('%25s: %0.3f' % (sc_name, scores[sc_name]))
+    return scores
 
 
 # ====== Ensemble Classifier/Regressor Model Creation

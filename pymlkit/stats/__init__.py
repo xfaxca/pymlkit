@@ -1,4 +1,4 @@
 """
 Stats/metrics module
 """
-from stats.metrics import *
+from pymlkit.stats import *

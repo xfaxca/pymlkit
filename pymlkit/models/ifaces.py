@@ -32,35 +32,35 @@ class XgbWrapper(object):
         self.params['seed'] = seed
         self.nrounds = params.pop('nrounds', 250)   # pop nrounds from dict w/ 250 as default if not passed
 
-    def train(self, X_train, y_train):
+    def train(self, x_train, y_train):
         """
         Method to train a gradient boosting decision tree from the xgboost package, formatted for a generic 'train'
             interface.
-        :param X_train: Training features
+        :param x_train: Training features
         :param y_train: Training target/labels
         :return: None
         """
-        dtrain = xgb.DMatrix(X_train, y_train)
+        dtrain = xgb.DMatrix(x_train, y_train)
         self.gbdt = xgb.train(self.params, dtrain, self.nrounds)
 
-    def fit(self, X_train, y_train):
+    def fit(self, x_train, y_train):
         """
         Method to train a gradient boosting decision tree from the xgboost package, formatted for a
             sklearn-like interface
-        :param X_train: Training features
+        :param x_train: Training features
         :param y_train: Training target/labels
         :return: None
         """
-        dtrain = xgb.DMatrix(X_train, y_train)
+        dtrain = xgb.DMatrix(x_train, y_train)
         self.gbdt = xgb.train(self.params, dtrain, self.nrounds)
 
-    def predict(self, X):
+    def predict(self, x):
         """
         Method calculate estimator predictions
-        :param X: Feature set from which to predict targets/labels
+        :param x: Feature set from which to predict targets/labels
         :return: predicted values.
         """
-        return self.gbdt.predict(xgb.DMatrix(X))
+        return self.gbdt.predict(xgb.DMatrix(x))
 
 
 class SklearnWrapper(object):
@@ -87,7 +87,7 @@ class SklearnWrapper(object):
     def train(self, x_train, y_train):
         """
         Method to train estimator package, formatted for a generic 'train' interface.
-        :param X_train: Training features
+        :param x_train: Training features
         :param y_train: Training target/labels
         :return: None
         """
@@ -96,7 +96,7 @@ class SklearnWrapper(object):
     def fit(self, x_train, y_train):
         """
         Method to train estimator formatted for a sklearn-like interface
-        :param X_train: Training features
+        :param x_train: Training features
         :param y_train: Training target/labels
         :return: None
         """
@@ -105,7 +105,7 @@ class SklearnWrapper(object):
     def predict(self, x):
         """
         Method calculate estimator predictions
-        :param X: Feature set from which to predict targets/labels
+        :param x: Feature set from which to predict targets/labels
         :return: predicted values.
         """
         return self.est.predict(x)

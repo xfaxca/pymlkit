@@ -2,26 +2,25 @@
 Module containing functionality for selecting models, including cross validation checks, model scans for common
 classifiers/regressors, creation of ensemble models (bagging, majority vote, etc.)
 """
-
 import sys
+from collections import OrderedDict
 
 # Metrics
 from sklearn.metrics import cohen_kappa_score
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error, median_absolute_error
-# Classifier import
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, VotingClassifier
-from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
-from sklearn.linear_model import LogisticRegression, SGDClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.neighbors import KNeighborsClassifier
+# Classifiers
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression, SGDClassifier
+from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, VotingClassifier
 # Regressor import
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
-from sklearn.ensemble import GradientBoostingRegressor, AdaBoostRegressor
-from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor, AdaBoostRegressor
 # Misc ML import
 
 __all__ = [
@@ -59,7 +58,7 @@ def clf_scan(X_train, y_train, X_test=None, y_test=None, cv=5):
     clf_names = ['LogisticRegression', 'MLPClassifier', 'LinearDicriminantAnalysis',
                  'SGD Classifier', 'AdaBoostClassifier', 'GradientBoostClassifier', 'SVC(rbf)',
                  'KNearestNeighbors', 'ExtraTreesClassifier', 'RandomForestClassifier']
-    clfs = [lr, mlp, lda, sgd, ada, gbc, svc_l, knn, et, rf]
+    clfs = [lr, mlp, lda, sgd, ada, gbc, svc, knn, et, rf]
 
     results = {}
     print('\n====== > Performing cross validation')

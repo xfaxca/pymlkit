@@ -3,33 +3,32 @@
 """
 Module containing functionality for data cleansing, imputation, feature mapping and scaling.
 """
-
+import sys
 import numpy as np
 import pandas as pd
-import sys
 
-
-from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN
-from imblearn.under_sampling import RandomUnderSampler
-
-from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.base import TransformerMixin
 from sklearn.preprocessing import LabelEncoder
+from imblearn.under_sampling import RandomUnderSampler
+from sklearn.model_selection import StratifiedShuffleSplit
+from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN
 
 
-__all__ = ['yn_binarize',
-           'map_feature',
-           'label_encoding',
-           'remove_outliers',
-           'impute_by_other',
-           'impute_all',
-           'DataFrameImputer',
-           'strat_shufflesplit',
-           'random_oversample',
-           'random_undersample',
-           'balance_classes_smote',
-           'balance_classes_adasyn',
-           'PolynomialConstructor']
+__all__ = [
+    'yn_binarize',
+    'map_feature',
+    'label_encoding',
+    'remove_outliers',
+    'impute_by_other',
+    'impute_all',
+    'DataFrameImputer',
+    'strat_shufflesplit',
+    'random_oversample',
+    'random_undersample',
+    'balance_classes_smote',
+    'balance_classes_adasyn',
+    'PolynomialConstructor'
+]
 
 
 # ===== Feature Mapping

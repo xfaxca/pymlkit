@@ -32,117 +32,104 @@ __all__ = [
 
 
 # ====== Model Comparisons/scans
-def clf_scan(X_train, y_train, X_test=None, y_test=None, cv=5):
+def clf_scan(xtrain, ytrain, xtest=None, ytest=None, cv=5):
     """
     Function to perform k-fold cross validation on some standard classifiers. Note, it may take a long time for
         some of the classifiers to converge on un-scaled data. Use un-scaled data with caution.
     :return: results: Library with classifier names and scores
-    :param X_train: Matrix of features from the training set
-    :param y_train: Class labels from the training set.
+    :param xtrain: Matrix of features from the training set
+    :param ytrain: Class labels from the training set.
     :param cv: # of folds to use during k-folds cross validation of each model.
-    :param X_test: Matrix of features from the testing set
-    :param y_test: Class labels from the testing set
+    :param xtest: Matrix of features from the testing set
+    :param ytest: Class labels from the testing set
     :return: results: Library with classifier names and scores
     """
-    rf = RandomForestClassifier(n_estimators=50)
-    lr = LogisticRegression()
-    mlp = MLPClassifier()
-    lda = LinearDiscriminantAnalysis()
-    sgd = SGDClassifier()
-    ada = AdaBoostClassifier(base_estimator=DecisionTreeClassifier(), n_estimators=50)
-    gbc = GradientBoostingClassifier()
-    svc = SVC(kernel='rbf', probability=True)
-    knn = KNeighborsClassifier()
-    et = ExtraTreeClassifier()
-
-    clf_names = ['LogisticRegression', 'MLPClassifier', 'LinearDicriminantAnalysis',
-                 'SGD Classifier', 'AdaBoostClassifier', 'GradientBoostClassifier', 'SVC(rbf)',
-                 'KNearestNeighbors', 'ExtraTreesClassifier', 'RandomForestClassifier']
-    clfs = [lr, mlp, lda, sgd, ada, gbc, svc, knn, et, rf]
+    clfs = {
+        'LogisticRegression': LogisticRegression(),
+        'MLPClassifier': MLPClassifier(),
+        'LinearDicriminantAnalysis':  LinearDiscriminantAnalysis(),
+        'SGD Classifier': SGDClassifier(),
+        'AdaBoostClassifier': AdaBoostClassifier(base_estimator=DecisionTreeClassifier(), n_estimators=50),
+        'GradientBoostClassifier': GradientBoostingClassifier(),
+        'SVC(rbf)': SVC(kernel='rbf', probability=True),
+        'KNearestNeighbors': KNeighborsClassifier(),
+        'ExtraTreesClassifier': ExtraTreeClassifier(),
+        'RandomForestClassifier': RandomForestClassifier(n_estimators=50)
+    }
 
     results = {}
-    print('\n====== > Performing cross validation')
-    for name, clf in zip(clf_names, clfs):
+    print('\n====== > Evaluation cross validation scores')
+    for name, clf in clfs.items():
         print('==> Current estimator:\n%s\n' % clf)
-        scores = cross_val_score(clf, X_train, y_train, cv=cv)
+        scores = cross_val_score(clf, xtrain, ytrain, cv=cv)
         results[name] = scores
     # for name, scores in results.items():
-    for name in clf_names:
+    for name in clfs.keys():
         print("%25s :: Accuracy: %0.3f%% (+/0 %0.3f%%)" % (name, 100 * results[name].mean(),
                                                            100 * results[name].std() * 2))
 
-    if (X_test is not None) and (y_test is not None):
+    if (xtest is not None) and (ytest is not None):
         test_results = {}
         cohen_kappa_results = {}
         print('=========================================================')
-        print('Calculating analagous model fits on training data.')
-
-        for name, clf in zip(clf_names, clfs):
+        print('Performing model fits on training/testing data.')
+        for name, clf in clfs.items():
             print('Processing %30s' % name)
             try:
-                clf.fit(X_train, y_train)
-                test_score = clf.score(X_test, y_test)
+                clf.fit(xtrain, ytrain)
+                test_score = clf.score(xtest, ytest)
                 test_results[name] = test_score
 
-                y_pred = clf.predict(X_test)
-                kappa = cohen_kappa_score(y_test, y_pred)
+                y_pred = clf.predict(xtest)
+                kappa = cohen_kappa_score(ytest, y_pred)
                 cohen_kappa_results[name] = kappa
             except Exception as e:
                 print('Error encountered calculating score on test data for %s. It may not have a built-in'
                       '.score attribute!' % name)
                 print('Exception: ', e)
-        print('\nNote, Scores on testing data should not necessarily be taken at face value. '
-              'In the case of classification problems, classification reports and confusion matrices should '
-              'be explored before making a final choice of model.')
-        print('=========================================================')
-
-        for name in clf_names:
+        for name in clfs.keys():
             print("%25s :: Accuracy:        %0.3f%%\n"
                   "%25s :: Cohen's Kappa:   %0.3f" % (name, 100 * test_results[name],
                                                       " ", cohen_kappa_results[name]))
-
     return results
 
 
-def reg_scan(X_train, y_train, cv=5, extra_regressors=None):
+def reg_scan(xtrain, ytrain, cv=5, extra_regressors=None):
     """
     Function to perform k-fold cross validation on some standard regressors. Note, it may take a long time for
         some of the models (e.g., SVM, MLP) to converge on un-scaled data. Use un-scaled data with caution.
     :return: results: Library with regressor names and scores
-    :param X_train: (pandas df) Training feature set
-    :param y_train: (pandas series/df) - Training target variable set
+    :param xtrain: (pandas df) Training feature set
+    :param ytrain: (pandas series/df) - Training target variable set
     :param cv: (int) - # of folds to use during k-folds cross validation of each model.
     :param extra_regressors: (dict, optional) - Key:Value pairs of regressor_name:estimator object. Extra regressors
             to include in the scan aside from those already included.
     :return: results: (dict) Regressor names and scores
     """
-    lr = LinearRegression()
-    rf = RandomForestRegressor(n_estimators=100)
-    etr = ExtraTreesRegressor(n_estimators=100)
-    gbr = GradientBoostingRegressor(n_estimators=100)
-    ada = AdaBoostRegressor(n_estimators=100)
-    svr = SVR(kernel='rbf')
-
-    reg_names = ['LinearRegression', 'Random Forest', 'Extra Trees',
-                 'Gradient Boost', 'AdaBoost', 'SVR(rbf)']
-    regs = [lr, rf, etr, gbr, ada, svr]
+    regs = {
+        'LinearRegression': LinearRegression(),
+        'Random Forest': RandomForestRegressor(n_estimators=100),
+        'Extra Trees': ExtraTreesRegressor(n_estimators=100),
+        'Gradient Boost': GradientBoostingRegressor(n_estimators=100),
+        'AdaBoost': AdaBoostRegressor(n_estimators=100),
+        'SVR(rbf)': SVR(kernel='rbf')
+    }
 
     # Add extra regressors if supplied
     if extra_regressors is not None:
         if not isinstance(extra_regressors, (dict, OrderedDict)):
             raise TypeError("Parameter 'extra_regressors' must be of type dict or collections.OrderedDict")
         for k, v in extra_regressors.items():
-            reg_names.append(k)
-            regs.append(v)
+            regs[k] = v
 
     results = {}
     print('\n====== > Performing cross validation')
-    for name, reg in zip(reg_names, regs):
+    for name, reg in regs.items():
         print('==> Current estimator:\n%s\n' % reg)
-        scores = cross_val_score(reg, X_train, y_train, cv=cv)
+        scores = cross_val_score(reg, xtrain, ytrain, cv=cv)
         results[name] = scores
 
-    for name in reg_names:
+    for name in regs.keys():
         print("%25s :: CV Score: %0.3f%% (+/0 %0.3f)" % (name, results[name].mean(),
                                                          results[name].std()))
     return results

@@ -3,9 +3,13 @@ Module for custom regression model classes.
 """
 from sklearn.base import BaseEstimator, RegressorMixin
 
+"""
+Rolling todo:
+    1. For AvgReg: Modify how parameters are used. Put them all into a dict. Also change X_train, y_train to just X,y
+"""
+
 
 class AveragingRegressor(BaseEstimator, RegressorMixin):
-    # TODO: Modify how parameters are used. Put them all into a dict. Also change X_train, y_train to just X,y
     """
     Summary: A Meta-regressor that averages all predictions of it's consituent regressors. Analogous to
         a majority vote classifer, but for regressoion

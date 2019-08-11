@@ -1,11 +1,12 @@
 """
 Module for misc utility functions for model training, evaluation,
 """
-import joblib
+from sklearn.externals import joblib
 
 __all__ = [
     'save_model'
 ]
+
 
 def save_model(model, fname='model'):
     """

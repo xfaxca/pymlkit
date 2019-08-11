@@ -1,5 +1,7 @@
 from pymlkit.nlp.spellcheck import SpellChecker
 
+TIME_LOOKUPS = True
+
 
 def main():
     """
@@ -19,27 +21,30 @@ def main():
         doctexts.append(open(datadir + doc).read())
     all_text = " ".join(doctexts)
 
-    sc = SpellChecker(all_text, autoparse=True)
-    print('Words [peek]:', sc.words[0:10])
-    print('Word Counts [peek]:', list(sc.wordcounts.items())[0:10])
-    print('Unique Words [peek]:', list(sc.unique_words)[0:10])
-    print('--->')
+    # Instantiate a SpellChecker and parse the text.
+    sc = SpellChecker(all_text, autoparse=True)  # alternatively, can call `parse_words` and `count_Words` methods separately.
 
     print("{} total words found. {} Unique words".format(sc.n_words, sc.n_unique_words))
     for word in ['hobbit', 'the', 'a', 'farm', 'random', 'history', 'stalk', 'asdfasdfasdfasdf', 'stare', 'book']:
         print("Probability of {word}: ".format(word=word), str(round(sc.probability(word) * 100, 4)) + '%')
-    # print("Probability of hobbit: ", str(round(sc.probability('hobbit') * 100, 2)) + '%')
-    # print('probability of the word "the": ', str(round(sc.probability('the') * 100, 2)) + '%')
-
     for mistake in ['hobit', 'pip', 'rign', 'stlak', 'shrie', 'ownard', 'teh', 'moer', 'hlep']:
         print('Corrected "{}":'.format(mistake), sc.correction(mistake))
 
-    print('Corrected "hobit":', sc.correction('hobit'))
-    print('Correct "pip":', sc.correction('pip'))
-
-    print('hello in words:', 'hello' in sc.unique_words)
-
-    print("DONE!!")
+    loop = True
+    while loop:
+        word = input("Please enter a word to spell check").lower().strip()
+        if word in ['exit', 'quit']:
+            print("Goodbye.")
+            loop = False
+        elif word != '':
+            from time import time
+            t0 = time()
+            print("Probability of {word}: ".format(word=word), str(round(sc.probability(word) * 100, 4)) + '%')
+            if TIME_LOOKUPS:
+                print("Total time: {}ms".format(round((time() - t0) * 1000, 2)))
+            print('Best suggestions to correct "{}":'.format(word), sc.correction(word, n=5))
+        else:
+            print("Your input was empty. Please try again or type 'quit' or 'exit' to exit.")
 
 
 if __name__ == '__main__':

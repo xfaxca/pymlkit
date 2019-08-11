@@ -6,12 +6,17 @@ Originally inspired by code at http://norvig.com/spell-correct.html
 import re
 import string
 from collections import Counter
+from functools import lru_cache
 from pymlkit.utility.caching import memoize
 
 
 class SpellChecker:
     """
     English language spell-checker.
+
+    TODO list:
+        1. Make more efficient for large data by discarding unncessary data after load.
+        2. Test with much larger corpus.
     """
     def __init__(self, text=None, autoparse=False):
         self.text = text
@@ -60,6 +65,7 @@ class SpellChecker:
         """
         return self.wordcounts[word] / self.n_words
 
+    @memoize
     def candidates(self, word):
         """
         Finds all possible spelling corrections for the word
@@ -76,16 +82,20 @@ class SpellChecker:
         """
         return set(w for w in words if w in self.unique_words)
 
-    @memoize
+    @lru_cache(maxsize=32)
     def correction(self, word, n=None):
         """
         Returns the most probable spelling correction for a word.
         :param word: (str)
+        :param n: (int) - Specify the top n correction suggestions. If None, the top suggestion is returned.
         :return:
         """
         candidates = self.candidates(word)
         if candidates and n is None:
-            return max(self.candidates(word), key=self.probability)
+            return max(candidates, key=self.probability)
+        elif candidates and n >= 0:
+            candidates = sorted(candidates, key=lambda x: 1 / self.probability(x))
+            return candidates[0:n]
         return 'No suggestions found'
 
     def d1_edits(self, word):

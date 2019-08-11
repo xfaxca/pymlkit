@@ -7,28 +7,20 @@ NOTE: This module should be split up into different categories/topics as it grow
 """
 import csv
 import re
+from textblob import TextBlob
 from nltk.corpus import stopwords
+from nltk.stem import SnowballStemmer
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from nltk.stem import SnowballStemmer, PorterStemmer, WordNetLemmatizer
 
-__all__ = ['firstlast_word_extractor',
-           'StemmedCountVectorizer',
-           'StemmedTfidfVectorizer',
-           'TextPreprocessor']
-
-
-# ====== Feature Extractors
-def firstlast_word_extractor(doc):
-    tokens = doc.split()
-    first, last = tokens[0], tokens[-1]
-    feats = {}
-    feats["first({0})".format(first)] = True
-    feats["last({0})".format(last)] = False
-    return feats
+__all__ = [
+    'StemmedCountVectorizer',
+    'StemmedTfidfVectorizer',
+    'TextPreprocessor',
+    'firstlast_word_extractor'
+]
 
 
-# ====== Classes
 class StemmedCountVectorizer(CountVectorizer):
 
     def build_analyzer(self):
@@ -273,3 +265,13 @@ class TextPreprocessor:
             rejoined_tokens.append(" ".join(tokens))
 
         return rejoined_tokens
+
+
+# ====== Feature Extractors
+def firstlast_word_extractor(doc):
+    tokens = doc.split()
+    first, last = tokens[0], tokens[-1]
+    return {
+        "first({0})".format(first): True,
+        "last({0})".format(last): False
+    }

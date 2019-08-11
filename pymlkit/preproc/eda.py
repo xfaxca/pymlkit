@@ -1,5 +1,4 @@
 # explore.py
-
 """
 Module containing functionality for exploratory data analysis and visualization.
 """

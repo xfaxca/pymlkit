@@ -6,10 +6,12 @@ Module containing functionality for exploratory data analysis and visualization.
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-__all__ = ['class_proportions',
-           'see_nulls',
-           'distplots',
-           'pairplots']
+__all__ = [
+    'class_proportions',
+    'see_nulls',
+    'distplots',
+    'pairplots'
+]
 
 
 # ====== Data Statistics

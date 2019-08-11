@@ -17,6 +17,7 @@ class SpellChecker:
     TODO list:
         1. Make more efficient for large data by discarding unncessary data after load.
         2. Test with much larger corpus.
+        3. Support alternative word tokenizers than just split by \w+
     """
     def __init__(self, text=None, autoparse=False):
         self.text = text

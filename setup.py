@@ -12,7 +12,7 @@ setup(name='pymlkit',
       packages=find_packages(),
       install_requires=['matplotlib==1.5.1',
                         'nltk==3.2.1',
-                        'numpy==1.11.2',
+                        'numpy==1.21.0',
                         'seaborn==0.7.1',
                         'scikit_learn==0.18.1',
                         'imbalanced-learn==0.2.1'])
